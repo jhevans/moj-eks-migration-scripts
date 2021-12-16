@@ -1,0 +1,4 @@
+ingress:
+  annotations:
+    external-dns.alpha.kubernetes.io/set-identifier: SERVICE-NAMESPACE-green
+    external-dns.alpha.kubernetes.io/aws-weight: "0"
