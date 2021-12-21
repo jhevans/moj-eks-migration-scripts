@@ -9,7 +9,7 @@ source ./get-vars.bash <<< $@
 
 # Steps:1,2 - done
 
-for SERVICE in ${services//,/}
+for SERVICE in ${services//,/ }
 do
 
   # Step 5 - Add new ingress resource in live
@@ -22,7 +22,8 @@ do
   git pull
   CHART_PATH="./helm_deploy/$SERVICE"
   DEV_VALUES_PATH="./helm_deploy/values-dev.yaml"
-  LIVE1_VALUES_PATH="./helm_deploy/$SERVICE/values.yaml"
+  VALUES_PATH="./helm_deploy/$SERVICE/values.yaml"
+  LIVE1_VALUES_PATH="./helm_deploy/$SERVICE/values-live1.yaml"
   LIVE_VALUES_PATH="./helm_deploy/$SERVICE/values-live.yaml"
   # If a new values file does not exist, create it
   if ! test -f LIVE_VALUES_PATH; then
@@ -39,12 +40,15 @@ do
 
     # If an old values file exists then copy it, otherwise create an empty one
     NEW_ANNOTATIONS=$(sed s/NAMESPACE/$NAMESPACE/ ~/dev/eks-migration/ingress-annotations | sed s/SERVICE/$SERVICE/)
-    if test -f LIVE1_VALUES_PATH; then
+    if test -f VALUES_PATH; then
     echo "✏️ Existing values file at ${LIVE1_VALUES_PATH} - adding new values"
-      cp "./helm_deploy/$SERVICE/values.yaml" $LIVE_VALUES_PATH | \
+      cp "./helm_deploy/$SERVICE/values.yaml" $LIVE1_VALUES_PATH
+      cat "./helm_deploy/$SERVICE/values.yaml" $LIVE_VALUES_PATH | \
       sed '/^ingress:.*/a   contextColour: green' | \
       sed '/^ingress:.*/a   annotations:' | \
       sed '/^annotations:.*/a     external-dns.alpha.kubernetes.io/aws-weight: "0"' > $LIVE_VALUES_PATH
+
+      git rm $VALUES_PATH
     else
       echo "✨ No file at ${LIVE1_VALUES_PATH} - creating new values files"
       echo "ingress:" > $LIVE1_VALUES_PATH

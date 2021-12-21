@@ -10,7 +10,7 @@ source ./get-vars.bash <<< $@
 
 # Steps:1,2 - done
 
-for namespace in ${namespaces//,/}
+for namespace in ${namespaces//,/ }
 do
 
   # Step 3 - Migrate your namespace environment to live
