@@ -33,7 +33,9 @@ do
     UPDATED_INGRESS_TEMPLATE_PATH=${CHART_PATH}/templates/ingress.yaml.temp
     if test -f $INGRESS_TEMPLATE_PATH; then
       echo "📝 Updating ${INGRESS_TEMPLATE_PATH} with .Values.ingress.contextColour"
-      sed 's/-blue/-{{ .Values.ingress.contextColour }}/' $INGRESS_TEMPLATE_PATH > $UPDATED_INGRESS_TEMPLATE_PATH
+      sed 's/-blue/-{{ .Values.ingress.contextColour }}/' $INGRESS_TEMPLATE_PATH |
+      sed 's/aws-weight: "100"/\n\t\t{{- with .Values.ingress.annotations }}\n\t\t{{- toYaml . | nindent 4 }}\n\t\t{{- end }}/' |
+      sed '/aws-weight/d' > $UPDATED_INGRESS_TEMPLATE_PATH
       rm $INGRESS_TEMPLATE_PATH
       mv $UPDATED_INGRESS_TEMPLATE_PATH $INGRESS_TEMPLATE_PATH
     fi
@@ -68,8 +70,8 @@ do
     git add $LIVE_VALUES_PATH $LIVE1_VALUES_PATH $INGRESS_TEMPLATE_PATH
     git commit -m "✨ PIC-1943: Update helm and values files for new live cluster" --no-verify
     git push --set-upstream origin ${branch_name}  --no-verify
-    git checkout main
-    git branch -D ${branch_name}
+#    git checkout main
+#    git branch -D ${branch_name}
   fi
   echo "✅ Done. Create a PR here https://github.com/ministryofjustice/${SERVICE}/pull/new/${branch_name}"
 done
